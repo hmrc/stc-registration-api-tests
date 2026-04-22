@@ -1,8 +1,8 @@
 **This is the template README. Please update this with project specific content.**
 
-# stc-registration-api-tests
+# stc-submissions-api-test
 
-<SERVICE_NAME> API tests.
+API journey tests suite for the [securities-transfer-charge-frontend](https://github.com/hmrc/securities-transfer-charge-frontend) using SeleniumWebdriver with ScalaTest.
 
 ## Pre-requisites
 
@@ -14,10 +14,10 @@ Start Mongo Docker container as follows:
 docker run --rm -d -p 27017:27017 --name mongo percona/percona-server-mongodb:6.0
 ```
 
-Start `<SERVICE_MANAGER_PROFILE>` services as follows:
+To start the required services via [service manager](https://github.com/hmrc/sm2), run:
 
 ```bash
-sm2 --start <SERVICE_MANAGER_PROFILE>
+sm2 --start STAMP_TAXES_ON_SHARES_ALL
 ```
 
 ## Tests

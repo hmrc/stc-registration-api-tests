@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.api.specs
+package uk.gov.hmrc.api.models
 
-import org.scalatest.featurespec.AnyFeatureSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
+import play.api.libs.json.{Json, OFormat}
 
-trait BaseSpec extends AnyFeatureSpec with GivenWhenThen with Matchers {}
+import java.time.LocalDate
+
+case class Amendment(
+  amendmentDate: LocalDate,
+  amendmentAmount: Amount,
+  amendmentReason: String,
+  updatedChargeAmount: Option[Amount],
+  paymentMethod: Option[String],
+  paymentDate: Option[LocalDate]
+)
+
+object Amendment {
+  implicit val format: OFormat[Amendment] = Json.format[Amendment]
+}
