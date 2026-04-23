@@ -1,0 +1,29 @@
+meta {
+  name: Ind Enrolment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}{{basePath}}/enrolment/individual
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subscriptionId": "SUBOG3x2te0KedG",
+    "nino": "TZ779904P"
+  }
+}
+
+tests {
+  test("Status code is 204", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

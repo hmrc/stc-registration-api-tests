@@ -20,10 +20,6 @@ import play.api.libs.json.*
 
 // --- Success Response ---
 case class SuccessResponse(
-  balanceDetails: BalanceDetails,
-  chargeDetails: Option[Seq[ChargeDetail]],
-  refundDetails: Option[Seq[RefundDetail]],
-  paymentHistoryDetails: Option[Seq[PaymentHistoryDetail]]
 )
 
 object SuccessResponse {

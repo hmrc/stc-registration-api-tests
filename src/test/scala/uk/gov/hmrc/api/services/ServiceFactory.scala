@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.api.services
 
-import org.scalatest.Assertions.fail
+import play.api.libs.json.JsValue
+import play.api.libs.ws.WSBodyWritables.*
 import uk.gov.hmrc.api.conf.TestEnvironment
-import uk.gov.hmrc.apitestrunner.util.ApiLogger.log
+import uk.gov.hmrc.api.helpers.JsonFileReader.readJsonFromTestResources
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse}
@@ -29,13 +30,21 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ServiceFactory @Inject() (client: HttpClientV2)(implicit ec: ExecutionContext) {
 
-  val baseUrl: String = TestEnvironment.url("stcSubscription")
+  val subscriptionUrl: String = TestEnvironment.url("stcSubscription")
+  val enrolmentUrl: String    = TestEnvironment.url("stcEnrolment")
 
-  def getStcRegistrationApi(fileName : String): Future[HttpResponse] = {
-
+  def postStcRegistrationApi(fileName: String): Future[HttpResponse] = {
+    val requestBody                = readJsonFromTestResources(fileName)
     implicit val hc: HeaderCarrier =
       HeaderCarrier(authorization = Some(Authorization("")))
 
-    client.post(URI.create(s"$baseUrl").toURL).execute[HttpResponse]
+    client.post(URI.create(s"$subscriptionUrl").toURL).withBody(requestBody).execute[HttpResponse]
+  }
+
+  def postStcRegistrationApiWithPayload(requestBody: JsValue): Future[HttpResponse] = {
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(authorization = Some(Authorization("")))
+
+    client.post(URI.create(s"$enrolmentUrl").toURL).withBody(requestBody).execute[HttpResponse]
   }
 }

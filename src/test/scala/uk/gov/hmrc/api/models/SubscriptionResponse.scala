@@ -16,19 +16,11 @@
 
 package uk.gov.hmrc.api.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json._
 
-import java.time.LocalDate
+// --- Subscription Response ---
+case class SubscriptionResponse(subscriptionId: String)
 
-case class Amendment(
-  amendmentDate: LocalDate,
-  amendmentAmount: Amount,
-  amendmentReason: String,
-  updatedChargeAmount: Option[Amount],
-  paymentMethod: Option[String],
-  paymentDate: Option[LocalDate]
-)
-
-object Amendment {
-  implicit val format: OFormat[Amendment] = Json.format[Amendment]
+object SubscriptionResponse {
+  implicit val reads: Reads[SubscriptionResponse] = Json.reads[SubscriptionResponse]
 }

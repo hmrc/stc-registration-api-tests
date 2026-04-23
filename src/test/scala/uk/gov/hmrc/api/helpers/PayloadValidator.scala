@@ -17,15 +17,16 @@
 package uk.gov.hmrc.api.helpers
 
 import org.scalatest.Assertions.*
-import play.api.libs.json.*
-import uk.gov.hmrc.api.models.SuccessResponse
+import uk.gov.hmrc.api.models.{ErrorResponse, SubscriptionResponse, SuccessResponse}
+import play.api.libs.json._
 
 object PayloadValidator {
 
-  def validateSuccessResponse(jsonString: String): SuccessResponse = {
+  // Generic JSON validation method
+  private def validateJson[T](jsonString: String)(implicit reads: Reads[T]): T = {
     val jsValue = Json.parse(jsonString)
 
-    jsValue.validate[SuccessResponse] match {
+    jsValue.validate[T] match {
       case JsSuccess(response, _) =>
         response
 
@@ -37,7 +38,7 @@ object PayloadValidator {
           .mkString("\n")
 
         fail(
-          s"""JSON did not validate against SuccessResponse schema:
+          s"""JSON did not validate against schema:
              |$errorMessages
              |Full JSON:
              |${Json.prettyPrint(jsValue)}
@@ -45,4 +46,28 @@ object PayloadValidator {
         )
     }
   }
+
+  // --- SuccessResponse validation ---
+  def validateSuccessResponse(jsonString: String): SuccessResponse =
+    validateJson[SuccessResponse](jsonString)
+
+  // --- SubscriptionResponse validation ---
+  def validateSubscriptionResponse(responseBody: String): String = {
+    val response = validateJson[SubscriptionResponse](responseBody)
+    require(response.subscriptionId.nonEmpty, "subscriptionId is empty")
+    response.subscriptionId
+  }
+
+  // --- Error Response validation ---
+  def validateErrorResponse(responseBody: String): ErrorResponse = {
+    val response = validateJson[ErrorResponse](responseBody)
+    require(response.obj.nonEmpty, "Error response contains no errors")
+    response
+  }
+
+  // Helper to extract error messages from error response
+  def extractErrorMessages(errorResponse: ErrorResponse): Map[String, Seq[String]] =
+    errorResponse.obj.map { case (field, errorDetails) =>
+      field -> errorDetails.flatMap(_.msg)
+    }
 }

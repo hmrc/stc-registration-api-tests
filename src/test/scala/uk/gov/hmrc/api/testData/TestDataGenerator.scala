@@ -20,21 +20,25 @@ import scala.util.Random
 
 object TestDataGenerator {
 
-  private val random = new Random()
+  private val validPrefixLetters = "ABCEGHJKLMNPRSTWXYZ" // Excludes D, F, I, Q, U, V
+  private val suffixLetters      = "ABCD"
 
-  def generateUTR(): String = {
-    val firstPart = "99"
-    val rest      = (1 to 8).map(_ => random.nextInt(10)).mkString
-    firstPart + rest
+  def generateNino(): String = {
+    val random = new Random()
+
+    val firstLetter  = validPrefixLetters(random.nextInt(validPrefixLetters.length))
+    val secondLetter = validPrefixLetters(random.nextInt(validPrefixLetters.length))
+
+    val digits = (1 to 6).map(_ => random.nextInt(10)).mkString
+
+    val suffix = suffixLetters(random.nextInt(suffixLetters.length))
+
+    s"$firstLetter$secondLetter$digits$suffix"
   }
 
-  def generateUTRLessAndMoreTenDigit(length: Int): String = {
-    if (length <= 0) {
-      throw new IllegalArgumentException("length must be greater than 0")
-    }
-    val first = (Random.nextInt(9) + 1).toString
-    val rest  = List.fill(length - 1)(Random.nextInt(10)).mkString
-    first + rest
+  def generateNino(prefix: String = "AA"): String = {
+    val num    = Random.nextInt(1000000)
+    val suffix = "C"
+    f"$prefix$num%06d$suffix"
   }
-
 }
