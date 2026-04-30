@@ -35,8 +35,8 @@ class RegistrationIndividualSpec extends BaseSpec {
 
     val testCases = Table(
       ("description", "input", "subscriptionStatus", "enrolmentStatus"),
-      ("Success - All mandatory fields with correct values", "IndRegSubscription200", 200, 204),
-      ("Success - Missing Optional fields", "IndRegSubscriptionOptional200", 200, 204),
+      ("Success - All mandatory fields with correct values", "IndRegSubscription200", 201, 204),
+      ("Success - Missing Optional fields", "IndRegSubscriptionOptional200", 201, 204),
       ("Error - Missing Name Field", "IndRegSubMissingFields400", 400, 204)
     )
 
@@ -53,7 +53,7 @@ class RegistrationIndividualSpec extends BaseSpec {
         whenReady(futureResponse) { apiResponse =>
           Then(s"the response status code should be $subscriptionStatus")
           checkResponseStatus(apiResponse.status, subscriptionStatus)
-          if (subscriptionStatus == 200) {
+          if (subscriptionStatus == 201) {
             And("the response body should contain subscriptionId")
             subscriptionId = PayloadValidator.validateSubscriptionResponse(apiResponse.body)
             log.info(s"Successfully retrieved subscriptionId: $subscriptionId")
@@ -66,7 +66,7 @@ class RegistrationIndividualSpec extends BaseSpec {
             assert(errorResponse.obj.nonEmpty, "Error response should contain errors")
           }
         }
-        if (subscriptionStatus == 200) {
+        if (subscriptionStatus == 201) {
           When("User sends a POST request to enrol")
           val nino                                      = generateNino()
           val enrolPayload                              = Json.obj("subscriptionId" -> subscriptionId, "nino" -> nino)

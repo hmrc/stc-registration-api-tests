@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse}
 
 import java.net.URI
+import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,8 +36,12 @@ class ServiceFactory @Inject() (client: HttpClientV2)(implicit ec: ExecutionCont
 
   def postStcRegistrationApi(fileName: String): Future[HttpResponse] = {
     val requestBody                = readJsonFromTestResources(fileName)
+    val correlationId              = UUID.randomUUID().toString
     implicit val hc: HeaderCarrier =
-      HeaderCarrier(authorization = Some(Authorization("")))
+      HeaderCarrier(
+        authorization = Some(Authorization("")),
+        extraHeaders = Seq("correlation-id" -> correlationId)
+      )
 
     client.post(URI.create(s"$subscriptionUrl").toURL).withBody(requestBody).execute[HttpResponse]
   }
