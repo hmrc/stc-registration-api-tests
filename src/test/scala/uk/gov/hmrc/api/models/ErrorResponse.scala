@@ -1,0 +1,42 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.api.models
+
+import play.api.libs.json._
+
+// --- Error Response Models ---
+case class ErrorDetail(msg: Seq[String], args: Seq[String])
+case class ErrorResponse(obj: Map[String, Seq[ErrorDetail]])
+
+object ErrorResponse {
+  implicit val errorDetailReads: Reads[ErrorDetail] = Json.reads[ErrorDetail]
+
+  // Custom reads to handle field names with dots
+  implicit val errorResponseReads: Reads[ErrorResponse] = (json: JsValue) =>
+    json
+      .as[JsObject]
+      .fields
+      .foldLeft[JsResult[Map[String, Seq[ErrorDetail]]]](JsSuccess(Map.empty)) {
+        case (JsSuccess(acc, _), (fieldName, fieldValue)) =>
+          fieldValue.validate[Seq[ErrorDetail]] match {
+            case JsSuccess(errorDetails, _) => JsSuccess(acc + (fieldName -> errorDetails))
+            case JsError(errors)            => JsError(errors)
+          }
+        case (error, _)                                   => error
+      }
+      .map(ErrorResponse(_))
+}

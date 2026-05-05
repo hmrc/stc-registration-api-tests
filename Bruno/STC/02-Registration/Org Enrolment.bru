@@ -1,0 +1,29 @@
+meta {
+  name: Org Enrolment
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}{{basePath}}/enrolment/organisation
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subscriptionId": "{{subscriptionId}}",
+    "ctUtr":"1234567890"
+  }
+}
+
+tests {
+  test("Status code is 204", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

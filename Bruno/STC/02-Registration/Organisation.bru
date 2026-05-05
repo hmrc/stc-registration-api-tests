@@ -1,0 +1,50 @@
+meta {
+  name: Organisation
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}{{basePath}}/subscription
+  body: json
+  auth: inherit
+}
+
+headers {
+  correlation-id: abcd
+}
+
+body:json {
+  {
+    "safeId": "safe1235",
+    "contactName": "John Doe",
+    "addressLine1": "123 Main Street",
+    "addressLine2": "Apt 4B",
+    "postcode": "SW1A 1AA",
+    "countryCode": "UK",
+    "telephoneNumber": "+44 20 7946 0958",
+    "mobileNumber": "+44 7700 900123",
+    "email": "john.doe@example.com"
+  }
+}
+
+tests {
+  test("Status code is 201", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response Validations", function () {
+    const responseJson = res.getBody();
+    expect(responseJson.subscriptionId).to.exist;
+    expect(responseJson.subscriptionId).to.be.a("string");
+    
+     bru.setEnvVar("subscriptionId", responseJson.subscriptionId);
+   
+  })
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
