@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.api.specs
 
-import org.scalactic.Prettifier.default
-import org.scalatest.concurrent.ScalaFutures.*
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 import play.api.libs.json.{JsValue, Json}
+import play.api.http.Status
 import uk.gov.hmrc.api.helpers.BaseSpec
 import uk.gov.hmrc.api.helpers.PayloadValidator
 import uk.gov.hmrc.api.helpers.builders.SubscriptionRequestBuilder
@@ -64,17 +64,33 @@ class RegistrationIndividualSpec extends BaseSpec {
 
         val futureResponse: Future[HttpResponse] =
           service.postStcRegistrationApi(payload)
-        var subscriptionId                       = ""
 
         whenReady(futureResponse) { apiResponse =>
           Then(s"the response status code should be $subscriptionStatus")
           checkResponseStatus(apiResponse.status, subscriptionStatus)
-          if (subscriptionStatus == 201) {
+
+          if (subscriptionStatus == Status.CREATED) {
             And("the response body should contain subscriptionId")
-            subscriptionId = PayloadValidator.validateSubscriptionResponse(apiResponse.body)
+            val subscriptionId = PayloadValidator.validateSubscriptionResponse(apiResponse.body)
             log.info(s"Successfully retrieved subscriptionId: $subscriptionId")
 
-            assert(subscriptionId.nonEmpty, "SubscriptionId should not be empty")
+            subscriptionId should not be empty
+
+            // Perform enrolment immediately after successful subscription
+            When("User sends a POST request to enrol")
+            val enrolPayload = Json.obj(
+              "subscriptionId" -> subscriptionId,
+              "nino"           -> generateNino()
+            )
+            log.info(s"Enrolment payload: $enrolPayload")
+
+            val futureEnrolResponse: Future[HttpResponse] =
+              service.postStcRegistrationApiWithPayload(enrolPayload)
+
+            whenReady(futureEnrolResponse) { enrolResponse =>
+              Then("the response status code should be successful")
+              enrolResponse.status shouldBe Status.NO_CONTENT
+            }
           } else {
             And("the response body should contain error details")
             val errorResponse =
@@ -84,22 +100,6 @@ class RegistrationIndividualSpec extends BaseSpec {
             log.info(s"Error response validated - errors: $errorMessages")
 
             assert(errorResponse.obj.nonEmpty, "Error response should contain errors")
-          }
-        }
-
-        if (subscriptionStatus == 201) {
-          When("User sends a POST request to enrol")
-          val nino                                      = generateNino()
-          val enrolPayload                              = Json.obj(
-            "subscriptionId" -> subscriptionId,
-            "nino"           -> nino
-          )
-          log.info(s"Enrolment payload: $enrolPayload")
-          val futureEnrolResponse: Future[HttpResponse] =
-            service.postStcRegistrationApiWithPayload(enrolPayload)
-          whenReady(futureEnrolResponse) { enrolResponse =>
-            Then("the response status code should be successful")
-            checkResponseStatus(enrolResponse.status, enrolmentStatus)
           }
         }
       }

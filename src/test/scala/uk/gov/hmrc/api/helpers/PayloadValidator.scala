@@ -17,8 +17,8 @@
 package uk.gov.hmrc.api.helpers
 
 import org.scalatest.Assertions.*
-import uk.gov.hmrc.api.models.{ErrorResponse, SubscriptionResponse, SuccessResponse}
-import play.api.libs.json._
+import play.api.libs.json.*
+import uk.gov.hmrc.api.models.{ErrorResponse, SubscriptionResponse}
 
 object PayloadValidator {
 
@@ -46,10 +46,6 @@ object PayloadValidator {
         )
     }
   }
-
-  // --- SuccessResponse validation ---
-  def validateSuccessResponse(jsonString: String): SuccessResponse =
-    validateJson[SuccessResponse](jsonString)
 
   // --- SubscriptionResponse validation ---
   def validateSubscriptionResponse(responseBody: String): String = {
