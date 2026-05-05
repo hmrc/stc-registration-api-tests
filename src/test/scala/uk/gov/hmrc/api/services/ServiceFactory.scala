@@ -19,32 +19,54 @@ package uk.gov.hmrc.api.services
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSBodyWritables.*
 import uk.gov.hmrc.api.conf.TestEnvironment
-import uk.gov.hmrc.api.helpers.JsonFileReader.readJsonFromTestResources
+import uk.gov.hmrc.apitestrunner.util.ApiLogger.log
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse}
 
 import java.net.URI
+import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ServiceFactory @Inject() (client: HttpClientV2)(implicit ec: ExecutionContext) {
 
-  val subscriptionUrl: String = TestEnvironment.url("stcSubscription")
-  val enrolmentUrl: String    = TestEnvironment.url("stcEnrolment")
+  // API endpoint URLs
+  private val subscriptionUrl: String = TestEnvironment.url("stcSubscription")
+  private val enrolmentUrl: String    = TestEnvironment.url("stcEnrolment")
 
-  def postStcRegistrationApi(fileName: String): Future[HttpResponse] = {
-    val requestBody                = readJsonFromTestResources(fileName)
-    implicit val hc: HeaderCarrier =
-      HeaderCarrier(authorization = Some(Authorization("")))
-
-    client.post(URI.create(s"$subscriptionUrl").toURL).withBody(requestBody).execute[HttpResponse]
+  // Header constants
+  private object HeaderKeys {
+    val CorrelationId = "correlation-id"
+    val ContentType   = "Content-Type"
+    val JsonMimeType  = "application/json"
   }
 
-  def postStcRegistrationApiWithPayload(requestBody: JsValue): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier =
-      HeaderCarrier(authorization = Some(Authorization("")))
+  private def createHeaderCarrier(): HeaderCarrier = {
+    val correlationId = UUID.randomUUID().toString
 
-    client.post(URI.create(s"$enrolmentUrl").toURL).withBody(requestBody).execute[HttpResponse]
+    val customHeaders = Seq(
+      HeaderKeys.CorrelationId -> correlationId,
+      HeaderKeys.ContentType   -> HeaderKeys.JsonMimeType
+    )
+
+    HeaderCarrier(
+      authorization = Some(Authorization("")),
+      extraHeaders = customHeaders
+    )
+  }
+
+  def postStcRegistrationApi(requestBody: JsValue): Future[HttpResponse] =
+    executeHttpRequest(subscriptionUrl, requestBody, "subscription")
+
+  def postStcRegistrationApiWithPayload(requestBody: JsValue): Future[HttpResponse] =
+    executeHttpRequest(enrolmentUrl, requestBody, "enrolment")
+
+  private def executeHttpRequest(url: String, requestBody: JsValue, requestType: String)(implicit
+    hc: HeaderCarrier = createHeaderCarrier()
+  ): Future[HttpResponse] = {
+    log.info(s"Sending $requestType request with payload: $requestBody")
+
+    client.post(URI.create(url).toURL).withBody(requestBody).execute[HttpResponse]
   }
 }

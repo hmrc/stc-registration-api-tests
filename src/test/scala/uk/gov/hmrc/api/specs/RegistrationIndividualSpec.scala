@@ -20,9 +20,10 @@ import org.scalactic.Prettifier.default
 import org.scalatest.concurrent.ScalaFutures.*
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.api.helpers.BaseSpec
 import uk.gov.hmrc.api.helpers.PayloadValidator
+import uk.gov.hmrc.api.helpers.builders.SubscriptionRequestBuilder
 import uk.gov.hmrc.api.testData.TestDataGenerator.generateNino
 import uk.gov.hmrc.apitestrunner.util.ApiLogger.log
 import uk.gov.hmrc.http.HttpResponse
@@ -34,51 +35,71 @@ class RegistrationIndividualSpec extends BaseSpec {
   Feature("Validate Individual Registration User Conditions") {
 
     val testCases = Table(
-      ("description", "input", "subscriptionStatus", "enrolmentStatus"),
-      ("Success - All mandatory fields with correct values", "IndRegSubscription200", 200, 204),
-      ("Success - Missing Optional fields", "IndRegSubscriptionOptional200", 200, 204),
-      ("Error - Missing Name Field", "IndRegSubMissingFields400", 400, 204)
+      ("description", "payload", "subscriptionStatus", "enrolmentStatus"),
+      (
+        "Success - All mandatory fields with correct values",
+        SubscriptionRequestBuilder.valid,
+        201,
+        204
+      ),
+      (
+        "Success - Missing Optional fields",
+        SubscriptionRequestBuilder.withoutOptionalFields,
+        201,
+        204
+      ),
+      (
+        "Error - Missing Name Field",
+        SubscriptionRequestBuilder.missingContactName,
+        400,
+        204
+      )
     )
 
-    forAll(testCases) { (description, fileName, subscriptionStatus, enrolmentStatus) =>
+    forAll(testCases) { (description: String, payload: JsValue, subscriptionStatus: Int, enrolmentStatus: Int) =>
       Scenario(description) {
+
         Given("the STC api is up and running")
-
         When("user sends a POST request to subscribe")
-        val futureResponse: Future[HttpResponse] = for {
-          apiResponse <- service.postStcRegistrationApi(fileName)
-        } yield apiResponse
 
-        var subscriptionId = ""
+        val futureResponse: Future[HttpResponse] =
+          service.postStcRegistrationApi(payload)
+        var subscriptionId                       = ""
+
         whenReady(futureResponse) { apiResponse =>
           Then(s"the response status code should be $subscriptionStatus")
           checkResponseStatus(apiResponse.status, subscriptionStatus)
-          if (subscriptionStatus == 200) {
+          if (subscriptionStatus == 201) {
             And("the response body should contain subscriptionId")
             subscriptionId = PayloadValidator.validateSubscriptionResponse(apiResponse.body)
             log.info(s"Successfully retrieved subscriptionId: $subscriptionId")
+
             assert(subscriptionId.nonEmpty, "SubscriptionId should not be empty")
           } else {
             And("the response body should contain error details")
-            val errorResponse = PayloadValidator.validateErrorResponse(apiResponse.body)
-            val errorMessages = PayloadValidator.extractErrorMessages(errorResponse)
+            val errorResponse =
+              PayloadValidator.validateErrorResponse(apiResponse.body)
+            val errorMessages =
+              PayloadValidator.extractErrorMessages(errorResponse)
             log.info(s"Error response validated - errors: $errorMessages")
+
             assert(errorResponse.obj.nonEmpty, "Error response should contain errors")
           }
         }
-        if (subscriptionStatus == 200) {
+
+        if (subscriptionStatus == 201) {
           When("User sends a POST request to enrol")
           val nino                                      = generateNino()
-          val enrolPayload                              = Json.obj("subscriptionId" -> subscriptionId, "nino" -> nino)
+          val enrolPayload                              = Json.obj(
+            "subscriptionId" -> subscriptionId,
+            "nino"           -> nino
+          )
           log.info(s"Enrolment payload: $enrolPayload")
-          val futureEnrolResponse: Future[HttpResponse] = for {
-            enrollResponse <- service.postStcRegistrationApiWithPayload(enrolPayload)
-          } yield enrollResponse
-
-          whenReady(futureEnrolResponse) { enrollResponse =>
+          val futureEnrolResponse: Future[HttpResponse] =
+            service.postStcRegistrationApiWithPayload(enrolPayload)
+          whenReady(futureEnrolResponse) { enrolResponse =>
             Then("the response status code should be successful")
-            log.info("DEBUG :: " + enrollResponse.body)
-            checkResponseStatus(enrollResponse.status, enrolmentStatus)
+            checkResponseStatus(enrolResponse.status, enrolmentStatus)
           }
         }
       }
