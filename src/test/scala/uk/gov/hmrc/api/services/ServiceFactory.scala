@@ -33,7 +33,8 @@ class ServiceFactory @Inject() (client: HttpClientV2)(implicit ec: ExecutionCont
 
   // API endpoint URLs
   private val subscriptionUrl: String = TestEnvironment.url("stcSubscription")
-  private val enrolmentUrl: String    = TestEnvironment.url("stcEnrolment")
+  private val enrolmentIndUrl: String = TestEnvironment.url("stcIndEnrolment")
+  private val enrolmentOrgUrl: String = TestEnvironment.url("stcOrgEnrolment")
 
   // Header constants
   private object HeaderKeys {
@@ -59,8 +60,11 @@ class ServiceFactory @Inject() (client: HttpClientV2)(implicit ec: ExecutionCont
   def postStcRegistrationApi(requestBody: JsValue): Future[HttpResponse] =
     executeHttpRequest(subscriptionUrl, requestBody, "subscription")
 
-  def postStcRegistrationApiWithPayload(requestBody: JsValue): Future[HttpResponse] =
-    executeHttpRequest(enrolmentUrl, requestBody, "enrolment")
+  def postStcIndEnrolment(requestBody: JsValue): Future[HttpResponse] =
+    executeHttpRequest(enrolmentIndUrl, requestBody, "enrolment")
+
+  def postStcOrgEnrolment(requestBody: JsValue): Future[HttpResponse] =
+    executeHttpRequest(enrolmentOrgUrl, requestBody, "enrolment")
 
   private def executeHttpRequest(url: String, requestBody: JsValue, requestType: String)(implicit
     hc: HeaderCarrier = createHeaderCarrier()

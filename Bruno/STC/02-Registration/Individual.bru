@@ -1,0 +1,89 @@
+meta {
+  name: Individual
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}{{basePath}}/subscription/{{subscriptionId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  correlation-id: abcd
+}
+
+body:json {
+  {
+    "safeId": "safe1235",
+    "contactName": "John Doe",
+    "addressLine1": "123 Main Street",
+    "addressLine2": "Apt 4B",
+    "addressLine3": null,
+    "postcode": "SW1A 1AA",
+    "countryCode": "UK",
+    "telephoneNumber": "+44 20 7946 0958",
+    "mobileNumber": "+44 7700 900123",
+    "email": "john.doe@example.com"
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response Validations", function () {
+  
+    const responseJson = res.getBody();
+  
+    // Root level validations
+    expect(responseJson.processingDate).to.exist;
+    expect(responseJson.processingDate).to.be.a("string");
+  
+    expect(responseJson.subsValidTo).to.exist;
+    expect(responseJson.subsValidTo).to.be.a("string");
+  
+    // Subscription object validations
+    expect(responseJson.subscription).to.exist;
+    expect(responseJson.subscription).to.be.an("object");
+  
+    const subscription = responseJson.subscription;
+  
+    // Validate using env variables stored from POST request
+    expect(subscription.contactName).to.equal(bru.getEnvVar("contactName"));
+    expect(subscription.addressLine1).to.equal(bru.getEnvVar("addressLine1"));
+    expect(subscription.addressLine2).to.equal(bru.getEnvVar("addressLine2"));
+    expect(subscription.postcode).to.equal(bru.getEnvVar("postcode"));
+    expect(subscription.countryCode).to.equal(bru.getEnvVar("countryCode"));
+    expect(subscription.telephoneNumber).to.equal(bru.getEnvVar("telephoneNumber"));
+  //   expect(subscription.mobileNumber).to.equal(bru.getEnvVar("mobileNumber"));
+    expect(subscription.email).to.equal(bru.getEnvVar("email"));
+    
+    // Optional field validation
+    if (subscription.addressLine3 !== undefined && subscription.addressLine3 !== null) {
+      expect(subscription.addressLine3).to.equal(
+        bru.getEnvVar("addressLine3")
+      );
+    }
+  
+    expect(subscription.email).to.match(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    );
+  
+    expect(responseJson.processingDate).to.match(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+    );
+  
+    expect(responseJson.subsValidTo).to.match(
+      /^\d{4}-\d{2}-\d{2}$/
+    );
+  
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

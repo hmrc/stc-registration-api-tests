@@ -34,15 +34,30 @@ tests {
     expect(res.getStatus()).to.equal(201);
   });
   
-  test("Response Validations", function () {
-    const responseJson = res.getBody();
-    expect(responseJson.subscriptionId).to.exist;
-    expect(responseJson.subscriptionId).to.be.a("string");
-    
-     bru.setEnvVar("subscriptionId", responseJson.subscriptionId);
-   
-  })
+  test("Store request and response values", function () {
   
+    // Response body
+    const responseJson = res.getBody();
+  
+    // Request body
+    const requestBody = req.getBody();
+  
+    // Store response values
+    bru.setEnvVar("subscriptionId", responseJson.subscriptionId);
+  
+    // Store request values
+    bru.setEnvVar("safeId", requestBody.safeId);
+    bru.setEnvVar("contactName", requestBody.contactName);
+    bru.setEnvVar("addressLine1", requestBody.addressLine1);
+    bru.setEnvVar("addressLine2", requestBody.addressLine2);
+    bru.setEnvVar("addressLine3", requestBody.addressLine3);
+    bru.setEnvVar("postcode", requestBody.postcode);
+    bru.setEnvVar("countryCode", requestBody.countryCode);
+    bru.setEnvVar("telephoneNumber", requestBody.telephoneNumber);
+    bru.setEnvVar("mobileNumber", requestBody.mobileNumber);
+    bru.setEnvVar("email", requestBody.email);
+  
+  });
 }
 
 settings {

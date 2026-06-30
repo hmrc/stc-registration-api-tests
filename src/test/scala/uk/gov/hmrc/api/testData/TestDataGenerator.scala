@@ -25,4 +25,7 @@ object TestDataGenerator {
     val suffix = "C"
     f"$prefix$num%06d$suffix"
   }
+
+  def generateCtUtr(number: Int = 10): String =
+    number.toString
 }

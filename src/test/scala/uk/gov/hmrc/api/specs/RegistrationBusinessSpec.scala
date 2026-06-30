@@ -19,20 +19,19 @@ package uk.gov.hmrc.api.specs
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import play.api.libs.json.{JsValue, Json}
 import play.api.http.Status
-import uk.gov.hmrc.api.helpers.BaseSpec
-import uk.gov.hmrc.api.helpers.PayloadValidator
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.api.helpers.{BaseSpec, PayloadValidator}
 import uk.gov.hmrc.api.helpers.builders.SubscriptionRequestBuilder
-import uk.gov.hmrc.api.testData.TestDataGenerator.generateNino
+import uk.gov.hmrc.api.testData.TestDataGenerator.{generateCtUtr, generateNino}
 import uk.gov.hmrc.apitestrunner.util.ApiLogger.log
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
-class RegistrationIndividualSpec extends BaseSpec {
+class RegistrationBusinessSpec extends BaseSpec {
 
-  Feature("Validate Individual Registration User Conditions") {
+  Feature("Validate Business Registration User Conditions") {
 
     val testCases = Table(
       ("description", "payload", "subscriptionStatus", "enrolmentStatus"),
@@ -80,12 +79,12 @@ class RegistrationIndividualSpec extends BaseSpec {
             When("User sends a POST request to enrol")
             val enrolPayload = Json.obj(
               "subscriptionId" -> subscriptionId,
-              "nino"           -> generateNino()
+              "ctUtr"          -> generateCtUtr()
             )
             log.info(s"Enrolment payload: $enrolPayload")
 
             val futureEnrolResponse: Future[HttpResponse] =
-              service.postStcIndEnrolment(enrolPayload)
+              service.postStcOrgEnrolment(enrolPayload)
 
             whenReady(futureEnrolResponse) { enrolResponse =>
               Then("the response status code should be successful")
