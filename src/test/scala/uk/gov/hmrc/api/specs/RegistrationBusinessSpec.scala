@@ -63,6 +63,7 @@ class RegistrationBusinessSpec extends BaseSpec {
 
         val futureResponse: Future[HttpResponse] =
           service.postStcRegistrationApi(payload)
+          println(futureResponse"futureResponse")
 
         whenReady(futureResponse) { apiResponse =>
           Then(s"the response status code should be $subscriptionStatus")
