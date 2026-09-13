@@ -7,11 +7,16 @@ meta {
 post {
   url: {{baseUrl}}{{basePath}}/subscription
   body: json
-  auth: inherit
+  auth: bearer
 }
 
 headers {
   correlation-id: abcd
+  Authorization: Bearer 8KNIXbr3VVsSEP0CJKYPysXoalLhl6JW4sVDMX0HtU/b0bZ36mBJwE8+SM0PM6ts/9ILVoVCLn+S2lWhpulpeMrFhpk4hnfrHLgVwnEuIfvCuBA/lLOBad27E2eUNgfU16XuiEkQfovI6j6OStc9JtzW2RhKqf7h0nhmooTWk8uPC5efQUUS2/6S2QaIOPKEZD0s3QiBNujpOO+yZPwBR2Xpqza75n+LQQJ2omv+7jE=
+}
+
+auth:bearer {
+  token: Bearer 8KNIXbr3VVsSEP0CJKYPysXoalLhl6JW4sVDMX0HtU/b0bZ36mBJwE8+SM0PM6ts/9ILVoVCLn+S2lWhpulpeMrFhpk4hnfrHLgVwnEuIfvCuBA/lLOBad27E2eUNgfU16XuiEkQfovI6j6OStc9JtzW2RhKqf7h0nhmooTWk8uPC5efQUUS2/6S2QaIOPKEZD0s3QiBNujpOO+yZPwBR2Xpqza75n+LQQJ2omv+7jE=
 }
 
 body:json {
