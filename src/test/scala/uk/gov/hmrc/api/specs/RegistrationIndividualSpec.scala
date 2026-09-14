@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.api.specs
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import play.api.libs.json.{JsValue, Json}
 import play.api.http.Status
-import uk.gov.hmrc.api.helpers.BaseSpec
-import uk.gov.hmrc.api.helpers.PayloadValidator
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.api.helpers.{BaseSpec, PayloadValidator}
 import uk.gov.hmrc.api.helpers.builders.SubscriptionRequestBuilder
 import uk.gov.hmrc.api.testData.TestDataGenerator.generateNino
 import uk.gov.hmrc.apitestrunner.util.ApiLogger.log
