@@ -39,19 +39,19 @@ class RegistrationIndividualSpec extends BaseSpec {
         SubscriptionRequestBuilder.valid,
         201,
         204
+      ),
+      (
+        "Success - Missing Optional fields",
+        SubscriptionRequestBuilder.withoutOptionalFields,
+        201,
+        204
+      ),
+      (
+        "Error - Missing Name Field",
+        SubscriptionRequestBuilder.missingContactName,
+        400,
+        204
       )
-//      (
-//        "Success - Missing Optional fields",
-//        SubscriptionRequestBuilder.withoutOptionalFields,
-//        201,
-//        204
-//      ),
-//      (
-//        "Error - Missing Name Field",
-//        SubscriptionRequestBuilder.missingContactName,
-//        400,
-//        204
-//      )
     )
 
     forAll(testCases) { (description: String, payload: JsValue, subscriptionStatus: Int, enrolmentStatus: Int) =>
